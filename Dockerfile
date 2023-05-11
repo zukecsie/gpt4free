@@ -1,18 +1,19 @@
-FROM python:3.10
+FROM python:3.11
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ffmpeg \
+ && apt-get -y clean \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/src/gpt4free
-WORKDIR /usr/src/gpt4free
+COPY requirements.txt /tmp
+RUN pip install --upgrade pip \
+ && pip install -r /tmp/requirements.txt \
+ && rm /tmp/requirements.txt
 
-# RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
-# RUN pip config set global.trusted-host mirrors.aliyun.com
+COPY . /root/gpt4free
 
-COPY requirements.txt /usr/src/gpt4free/
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . /usr/src/gpt4free
-RUN cp gui/streamlit_app.py .
+WORKDIR /root/gpt4free
+
+CMD ["streamlit", "run", "./gui/streamlit_app.py"]
 
 EXPOSE 8501
-
-CMD ["streamlit", "run", "streamlit_app.py"]

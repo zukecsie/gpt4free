@@ -40,12 +40,12 @@ class Completion:
             proxies=proxies,
             content_callback=Completion.handle_stream_response,
             json={'prompt': prompt, 'options': options},
+            timeout=100000
         )
 
         Completion.stream_completed = True
 
     @staticmethod
-
     def create(prompt: str, proxy: Optional[str] = None) -> Generator[str, None, None]:
         Completion.stream_completed = False
         
@@ -65,3 +65,12 @@ class Completion:
     @staticmethod
     def handle_stream_response(response):
         Completion.message_queue.put(response.decode())
+
+    @staticmethod
+    def get_response(prompt: str, proxy: Optional[str] = None) -> str:
+        response_list = []
+        for message in Completion.create(prompt, proxy):
+            response_list.append(message)
+        return ''.join(response_list)
+        
+        Completion.message_queue.put(response.decode(errors='replace'))
